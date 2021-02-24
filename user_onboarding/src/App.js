@@ -6,18 +6,15 @@ import Form from './Form'
 import Member from './Member'
 
 import * as yup from "yup"
-import schema from "../validation/formSchema"
+import schema from "./validation/formSchema"
+import formSchema from './validation/formSchema';
 
 const initialFormValues = {
   name: "",
   email: "",
-  password: "",
   // Checkbox
-  terms: false,
   jam: false,
-  metal: false,
   indie: false,
-  alternative: false,
   funk: false,
   blues: false,
   folk: false,
@@ -28,8 +25,6 @@ const initialFormValues = {
 const initialFormErrors = {
   name: "",
   email: "",
-  password: "",
-  terms: false,
   role: ""
 }
 
@@ -40,27 +35,78 @@ function App() {
 
   const [members, setMembers] = useState(initialMembers);
   const [formValues, setFormValues] = useState(initialFormValues);
-  const [formErros, setFormErrors] = useState(initialFormErrors);
+  const [formErrors, setFormErrors] = useState(initialFormErrors);
   const [disabled, setDisabled] = useState(initialDisabled);
 
-  const inputChange = () => {
-    
+  const getMembers = () => {
+    axios.get('https://reqres.in/api/users')
+      .then(res => {
+      setMembers(res.data)
+      })
+      .catch(err => {
+      console.log(err)
+    })
+  }
+  
+  const postNewMember = newMember => {
+    axios.post('https://reqres.in/api/users', newMember)
+      .then(res => {
+      setMembers([res.data, ...members])
+      })
+      .catch(err => {
+      console.log(err)
+      })
+    setFormErrors(initialFormValues)
+  }
+
+  const inputChange = (name, value) => {
+    yup.reach(formSchema, name)
+    .validate(value)
+      .then(() => {
+        setFormErrors({...formErrors, [name]: ''})
+      })
+      .catch(err => {
+        setFormErrors({...formErrors, [name]: err.errors[0]})
+      
+    })
+    setFormValues({ ...formValues, [name]: value })
   }
 
   const formSubmit = () => {
-
+    const newMember = {
+      name: formValues.name.trim(),
+      email: formValues.email.trim(),
+      role: formValues.role.trim(),
+      genres: ['jam', 'indie', 'funk', 'blues', 'folk'].filter(genre => formValues[genre])
+    }
+    postNewMember(newMember)
   }
 
+  useEffect(() => {
+    formSchema.isValid(formValues).then(valid => setDisabled(!valid))
+  }, [formValues])
+
   return (
-    <div className="App">
-      <h1>New Band Member Onboarding</h1>
+    <div className="container">
+      <header>
+        <h1>New Band Member Onboarding</h1>
+      </header>
+      
       <Form
         values={formValues}
         change={inputChange}
         submit={formSubmit}
         disabled={disabled}
-        errors={formErros}
+        errors={formErrors}
       />
+
+      {
+        members.map(member => {
+          return (
+            <Member key={member.id} details={member} />
+          )
+        })
+      }
     </div>
   );
 }

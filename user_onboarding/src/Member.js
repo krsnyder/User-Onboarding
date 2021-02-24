@@ -1,6 +1,13 @@
-export default function Member(props) {
-
+export default function Member({details}) {
+  const { name, email, role } = details
+  
   return (
-    console.log("ok")
+    <div className="container">
+      <div className="form-group">
+        <h3>{name}</h3>
+        <p>{email}</p>
+        <p>{role}</p>
+      </div>
+    </div>
   )
 }
