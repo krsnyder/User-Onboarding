@@ -4,7 +4,7 @@ export default yup.object().shape({
   name: yup
     .string()
     .required("Tell us your name!")
-    .min(2, "Your name is atleast 2 letters, right??"),
+    .min(2, "Your name is at least 2 letters, right??"),
   email: yup
     .string()
     .email("Not Snail Mail! E-mail!")
